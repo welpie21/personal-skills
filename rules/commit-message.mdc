@@ -1,0 +1,42 @@
+---
+description: Keep generated git commit messages short, contextual, and easy to scan
+alwaysApply: true
+---
+
+# Git Commit Messages
+
+When generating a git commit message:
+
+- Prefer a very short, descriptive title that gives enough context to understand
+  the change without reading the diff.
+- Prefix the title with the change type, such as `Fix`, `Chore`, `Removed`,
+  `Add`, `Update`, `Refactor`, `Docs`, or `Test`.
+- Use `Fix` for bug fixes or broken behavior.
+- Use imperative or present-tense wording and omit trailing punctuation.
+- Keep the title around 50 characters when possible.
+- Include a brief body as a short bullet list of the main changes.
+- Keep each bullet about as short as the title; avoid full sentences.
+- List outcomes or change areas, not every touched file.
+- Avoid vague titles like `Update files`, `Fix stuff`, or `Changes`.
+
+## Format
+
+```text
+Type short descriptive title
+
+- Brief change item
+- Brief change item
+- Brief change item
+```
+
+## Example
+
+```text
+Fix weekly recap source filtering
+
+- Tighten source filtering
+- Clarify recap ordering
+- Keep examples concise
+````
+
+Add commit message guidelines for clarity and consistency
