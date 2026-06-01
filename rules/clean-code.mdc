@@ -1,0 +1,114 @@
+---
+description: Universal principles for clean, maintainable, modular code that performs well, applicable to any language and author (AI or human)
+alwaysApply: true
+---
+
+# Clean, Maintainable & Performant Code
+
+Language-agnostic engineering standards (grounded in ISO/IEC 25010: modularity,
+reusability, analyzability, modifiability, testability). These are tools for
+thinking, applied pragmatically — not dogmatically.
+
+## Default posture: readability first
+
+1. Write the simplest code that correctly solves the *current* problem (KISS, YAGNI).
+2. Optimize for the next reader. Code is read far more than it is written.
+3. Only sacrifice clarity for speed when a profiler proves it's needed (see Performance).
+
+## Naming & intent
+
+- Names reveal intent: a reader should know *what* and *why* without comments.
+- Functions are verbs (`calculateTax`), variables/types are nouns (`taxRate`).
+- No abbreviations or single letters except tight loop indices. No `data`/`tmp`/`obj`.
+- Replace magic numbers/strings with named constants.
+
+## Functions & single responsibility
+
+- One function does one thing at one level of abstraction.
+- A function past ~20 lines of logic, or with a `do X *and* Y` name, is a refactor candidate.
+- Keep nesting shallow: prefer early returns / guard clauses over deep `if/else`.
+- Few parameters (≤3). Group related args into a struct/object.
+
+```
+// BAD: mixed responsibilities + side effects
+function saveUser(u) { validate(u); db.insert(u); sendEmail(u); log(u); }
+
+// GOOD: orchestrator delegates to focused units
+function registerUser(u) {
+  const valid = validateUser(u);
+  const saved = userRepository.insert(valid);
+  notifier.sendWelcome(saved);
+  return saved;
+}
+```
+
+## Modularity: high cohesion, low coupling
+
+- Group related behavior together; keep unrelated concerns apart.
+- Modules talk through explicit, minimal interfaces — never reach into another
+  module's internals.
+- No God objects/files. Separate business rules from I/O, framework, and transport.
+- DRY: one authoritative source for each rule. But don't over-DRY — duplication is
+  cheaper than the wrong abstraction (WET beats a leaky shared helper).
+
+## Dependencies (Dependency Inversion)
+
+- Depend on abstractions (interfaces/contracts), not concrete implementations.
+- Inject dependencies (constructor/params/config) instead of hard-instantiating them.
+- This keeps units swappable and testable in isolation.
+
+```
+// BAD: hard-wired concretion
+class OrderService { db = new PostgresClient(); }
+
+// GOOD: injected abstraction
+class OrderService { constructor(private repo: OrderRepository) {} }
+```
+
+## SOLID, briefly
+
+- **S**ingle Responsibility — one reason to change per unit.
+- **O**pen/Closed — extend via new code (polymorphism, a registry/map), don't edit working code.
+- **L**iskov — implementations must honor the contract (same return shape, no surprise throws).
+- **I**nterface Segregation — many small interfaces over one fat one; don't force unused methods.
+- **D**ependency Inversion — see above.
+
+## Comments & documentation
+
+- Comments explain *why* (intent, trade-offs, constraints) — never narrate *what* the code already says.
+- Delete commented-out code; version control remembers it.
+- Document public interfaces and any non-obvious decision.
+
+## Testing & correctness
+
+- Design for testability: pure functions, no hidden global state, deterministic behavior.
+- Each responsibility is independently testable; isolate external dependencies.
+- Handle errors explicitly and close to the source; never swallow them silently.
+
+## Performance without sacrificing clarity
+
+Clean and fast are not opposites — but when they conflict:
+
+1. **Measure first.** Use a profiler to find the real hot path; never optimize on assumption.
+2. **Optimize only proven bottlenecks** (tight loops, hot serialization, low-latency paths).
+3. **Isolate the mess.** Contain low-level/optimized code behind a clean API (Facade);
+   the rest of the system stays readable.
+4. **Document the trade-off.** Explain *why* the optimization exists and what cleaning it up would cost.
+5. **Keep tests + monitoring** on optimized code to prove it's still correct and actually faster.
+6. Avoid premature optimization and over-engineered abstractions equally.
+
+## Continuous quality
+
+- Boy Scout Rule: leave code cleaner than you found it.
+- Refactor in small, behavior-preserving steps backed by tests.
+- Treat technical debt as managed and visible, not hidden.
+
+## Quick checklist before finishing
+
+- [ ] Names communicate intent; no magic values.
+- [ ] Functions are small, single-purpose, shallow.
+- [ ] High cohesion, low coupling; dependencies injected.
+- [ ] No needless duplication and no needless abstraction.
+- [ ] Comments explain *why*; dead code removed.
+- [ ] Testable and tested; errors handled explicitly.
+- [ ] Any optimization is measured, isolated, and documented.
