@@ -15,32 +15,40 @@ thinking, applied pragmatically — not dogmatically.
 2. Optimize for the next reader. Code is read far more than it is written.
 3. Only sacrifice clarity for speed when a profiler proves it's needed (see Performance).
 
+## AI coding behavior
+
+- Read nearby code first and follow established local patterns before introducing
+  a new structure, helper, naming style, or abstraction.
+- Make the smallest cohesive change that solves the problem; avoid unrelated
+  refactors, formatting churn, or broad rewrites.
+- Prefer explicit, boring, easy-to-trace code over clever or overly generic code.
+- Name things from the domain so intent is clear without comments.
+- Keep business decisions separate from framework, I/O, persistence, and
+  presentation details.
+- Do not introduce abstractions for imagined future needs; wait for real
+  repetition, variation, or complexity.
+- Preserve existing contracts unless the task explicitly asks to change them.
+- Before finishing, review the code as a maintainer: can it be understood,
+  tested, changed, and safely removed later?
+
 ## Naming & intent
 
 - Names reveal intent: a reader should know *what* and *why* without comments.
-- Functions are verbs (`calculateTax`), variables/types are nouns (`taxRate`).
-- No abbreviations or single letters except tight loop indices. No `data`/`tmp`/`obj`.
+- Behavior-bearing units use verb phrases; values, types, and concepts use noun phrases.
+- Avoid abbreviations, single letters, and vague placeholders except in tiny,
+  obvious scopes.
 - Replace magic numbers/strings with named constants.
 
 ## Functions & single responsibility
 
 - One function does one thing at one level of abstraction.
-- A function past ~20 lines of logic, or with a `do X *and* Y` name, is a refactor candidate.
-- Keep nesting shallow: prefer early returns / guard clauses over deep `if/else`.
-- Few parameters (≤3). Group related args into a struct/object.
-
-```
-// BAD: mixed responsibilities + side effects
-function saveUser(u) { validate(u); db.insert(u); sendEmail(u); log(u); }
-
-// GOOD: orchestrator delegates to focused units
-function registerUser(u) {
-  const valid = validateUser(u);
-  const saved = userRepository.insert(valid);
-  notifier.sendWelcome(saved);
-  return saved;
-}
-```
+- A function past ~20 lines of logic, or whose name says it does X *and* Y, is a refactor candidate.
+- Keep nesting shallow: prefer early returns / guard clauses over deep conditional trees.
+- Few parameters (≤3). Group related inputs into a meaningful data structure.
+- Mixed-responsibility example: one operation validates input, persists data,
+  sends notifications, and records audit details directly.
+- Cleaner shape: an orchestration flow delegates validation, persistence,
+  notification, and auditing to focused collaborators.
 
 ## Modularity: high cohesion, low coupling
 
@@ -54,16 +62,13 @@ function registerUser(u) {
 ## Dependencies (Dependency Inversion)
 
 - Depend on abstractions (interfaces/contracts), not concrete implementations.
-- Inject dependencies (constructor/params/config) instead of hard-instantiating them.
+- Receive dependencies through explicit creation, parameters, or configuration
+  boundaries instead of hard-instantiating them inside business logic.
 - This keeps units swappable and testable in isolation.
-
-```
-// BAD: hard-wired concretion
-class OrderService { db = new PostgresClient(); }
-
-// GOOD: injected abstraction
-class OrderService { constructor(private repo: OrderRepository) {} }
-```
+- Hard-wired example: a business service creates its own storage, messaging, or
+  network client internally.
+- Cleaner shape: the service receives a contract for that dependency, so tests
+  and production code can provide different implementations.
 
 ## SOLID, briefly
 
@@ -71,7 +76,37 @@ class OrderService { constructor(private repo: OrderRepository) {} }
 - **O**pen/Closed — extend via new code (polymorphism, a registry/map), don't edit working code.
 - **L**iskov — implementations must honor the contract (same return shape, no surprise throws).
 - **I**nterface Segregation — many small interfaces over one fat one; don't force unused methods.
-- **D**ependency Inversion — see above.
+- **D**ependency Inversion — high-level policy depends on stable contracts; concrete details are supplied from the outside.
+
+## LSP violation checks
+
+Use these steps whenever a subtype, implementation, adapter, plugin, handler,
+strategy, or override is expected to stand in for a broader contract:
+
+1. State the parent contract in behavior terms: accepted inputs, promised outputs,
+   side effects, error rules, ordering, idempotency, and invariants. Do not define
+   it by one current implementation's details.
+2. Run the substitution test: a caller that depends only on the parent contract
+   should be able to use any replacement without branching, pre-filtering inputs,
+   catching new failure modes, or reinterpreting results.
+3. Check for stronger preconditions: the replacement must not require narrower
+   inputs, extra setup, stricter state, special permissions, or hidden dependencies
+   beyond what the contract already requires.
+4. Check for weaker postconditions: the replacement must not return less complete
+   results, skip promised side effects, loosen consistency guarantees, or leave the
+   system in a state the contract does not allow.
+5. Check error behavior: failures must fit the contract's documented expectations.
+   A replacement should not introduce surprising errors that ordinary callers of
+   the contract are not supposed to handle.
+6. Preserve invariants: shared business rules, lifecycle constraints, ownership,
+   permissions, and data consistency must remain true before and after the
+   replacement is used.
+7. Watch for caller workarounds: if callers need to ask which implementation they
+   received before using it, the contract is too broad, the implementation does
+   not belong there, or responsibilities are mixed.
+8. Fix the design at the boundary: split the contract, move optional behavior into
+   a separate capability, prefer composition, or create a clearer abstraction.
+   Do not make every caller compensate for one incompatible replacement.
 
 ## Comments & documentation
 
@@ -106,8 +141,10 @@ Clean and fast are not opposites — but when they conflict:
 ## Quick checklist before finishing
 
 - [ ] Names communicate intent; no magic values.
+- [ ] Local patterns were followed before adding new structures or abstractions.
 - [ ] Functions are small, single-purpose, shallow.
 - [ ] High cohesion, low coupling; dependencies injected.
+- [ ] Substitutions honor LSP: no stronger preconditions, weaker postconditions, or caller workarounds.
 - [ ] No needless duplication and no needless abstraction.
 - [ ] Comments explain *why*; dead code removed.
 - [ ] Testable and tested; errors handled explicitly.
