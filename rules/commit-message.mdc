@@ -1,8 +1,7 @@
 ---
 description: Keep generated git commit messages short, contextual, and easy to scan
-alwaysApply: true
+alwaysApply: false
 ---
-
 # Git Commit Messages
 
 When generating a git commit message:
