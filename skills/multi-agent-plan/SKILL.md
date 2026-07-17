@@ -1,22 +1,6 @@
 ---
 name: multi-agent-plan
-description: >-
-  Analyzes a task, feature, or plan and produces an optimized plan for
-  splitting the work across multiple agents (via the Agent tool or Workflow
-  tool) so they can run in parallel without clashing. Builds a dependency
-  graph to determine sequencing, and a file/resource conflict map to
-  guarantee agents in the same parallel batch never touch the same files,
-  shared types, config, or generated artifacts (lockfiles, migrations,
-  schema) at the same time — recommending git worktree isolation or
-  re-sequencing when overlap is unavoidable. Produces a concrete phased plan
-  (parallel batches of agent assignments, each with scope, owned files,
-  dependencies, and isolation strategy) and only spawns agents once the user
-  approves the split. Use this whenever the user wants to parallelize,
-  divide, split, or fan out a task across multiple agents/subagents, asks
-  how to break up work so agents don't conflict or step on each other, wants
-  to speed up a big feature by working on pieces simultaneously, or is about
-  to launch several Agent/Workflow calls on related work and needs to know
-  how to shard it safely.
+description: "Create an optimized multi-agent execution plan for a task or feature. Analyze its scope, dependencies, and file/resource conflicts, then produce sequenced parallel batches with per-agent ownership, dependencies, and isolation strategy. Prevent concurrent edits to shared files, types, config, lockfiles, migrations, schemas, or registration points by merging, sequencing, or using worktrees plus reconciliation. Use when the user wants to parallelize, split, fan out, or safely coordinate work across multiple agents/subagents, or asks how to avoid conflicts while developing related pieces in parallel. Present the plan first; spawn agents only after user approval."
 ---
 
 # Multi-Agent Work Split

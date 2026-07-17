@@ -1,0 +1,4 @@
+interface:
+  display_name: "Frontend Visual Verification"
+  short_description: "Make React UI changes evidence-driven"
+  default_prompt: "Use $frontend-visual-verification to implement and verify this React UI against the attached reference."
