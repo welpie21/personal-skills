@@ -1,0 +1,4 @@
+interface:
+  display_name: "Stepifier"
+  short_description: "Turn long context into action steps"
+  default_prompt: "Use $stepifier to turn this context into a detailed, actionable plan."
